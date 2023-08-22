@@ -1,4 +1,4 @@
-module un-TaskGo
+module togo
 
 go 1.21.0
 

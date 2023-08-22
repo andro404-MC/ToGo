@@ -32,7 +32,7 @@ func main() {
 type model struct {
 	taskList  []task
 	cursor    int
-	isTyping  bool
+	state     int
 	textInput textinput.Model
 	err       error
 }
@@ -64,14 +64,14 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			Save(m)
 			return m, tea.Quit
 		case "enter":
-			if m.isTyping {
+			if m.state == 2 {
 				if m.textInput.Value() > "" {
 					m.taskList = append(m.taskList, task{m.textInput.Value(), false})
-					m.isTyping = false
+					m.state = 1
 					m.textInput.Reset()
 				}
 			} else {
-				m.isTyping = true
+				m.state = 2
 			}
 		}
 	case errMsg:
@@ -79,7 +79,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		return m, nil
 	}
 
-	if m.isTyping {
+	if m.state == 2 {
 		m.textInput, cmd = m.textInput.Update(msg)
 		return m, cmd
 	}
@@ -114,31 +114,36 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 }
 
 func (m model) View() string {
-	if m.isTyping {
-		return fmt.Sprintf("Add a new task\n\n%s\n\n%s",
+	var s string
+
+	switch m.state {
+	case 1:
+		s = "Task list:\n\n"
+
+		for i, choice := range m.taskList {
+
+			cursor := "▍"
+			if m.cursor == i {
+				cursor = "▉"
+			}
+
+			checked := " "
+			if m.taskList[i].isSelected {
+				checked = "✓"
+			}
+
+			s += fmt.Sprintf("%s [%s] %s\n", cursor, checked, choice.taskText)
+		}
+
+		s += "\nPress KeyEsc to quit and d to delete.\n"
+
+	case 2:
+		s = fmt.Sprintf("Add a new task\n\n%s\n\n%s",
 			m.textInput.View(),
 			"(esc to quit)",
 		) + "\n"
 	}
 
-	s := "Task list:\n\n"
-
-	for i, choice := range m.taskList {
-
-		cursor := "▍"
-		if m.cursor == i {
-			cursor = "▉"
-		}
-
-		checked := " "
-		if m.taskList[i].isSelected {
-			checked = "✓"
-		}
-
-		s += fmt.Sprintf("%s [%s] %s\n", cursor, checked, choice.taskText)
-	}
-
-	s += "\nPress KeyEsc to quit and d to delete.\n"
 	return s
 }
 
@@ -190,13 +195,14 @@ func Load() model {
 
 	var loadedModel model
 
-	// Decode JSON data into the model
 	err = json.Unmarshal(loadedData, &loadedModel)
 	if err != nil {
 		fmt.Println("Error:", err)
 		return model{}
 	}
+
 	loadedModel.textInput = ti
+	loadedModel.state = 1
 	return loadedModel
 }
 

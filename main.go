@@ -12,7 +12,7 @@ import (
 )
 
 var (
-	filename string = "/.local/share/tuiapptest/data.json"
+	filename string = "/.local/share/togo/data.json"
 	output   *termenv.Output
 )
 

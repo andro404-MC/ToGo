@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
-  "path/filepath"
+	"path/filepath"
 
 	"github.com/charmbracelet/bubbles/textinput"
 	tea "github.com/charmbracelet/bubbletea"
@@ -13,30 +13,33 @@ import (
 var filename string = "/.local/share/tuiapptest/data.json"
 
 func main() {
-  homeDir, err := os.UserHomeDir()
+	homeDir, err := os.UserHomeDir()
 	if err != nil {
 		fmt.Println("Error getting user home directory:", err)
-	  os.Exit(3)	
+		os.Exit(3)
 	}
-  filename = homeDir + filename  
+	filename = homeDir + filename
 
 	p := tea.NewProgram(initialModel())
 	if _, err := p.Run(); err != nil {
-		fmt.Printf(
-			"Buddy what have you done ?? i mean this is literaly just a task app how the fuck did you brock items Error.\nError: %v",
-			err,
-		)
+		msg := "Buddy what have you done ?? i mean this is literaly just a task app how "
+		msg += "the fuck did you brock items Error.\nError: %v"
+		fmt.Printf(msg, err)
 		os.Exit(1)
 	}
 }
 
 type model struct {
-	choices   []string
+	taskList  []task
 	cursor    int
-	selected  map[int]struct{}
 	isTyping  bool
 	textInput textinput.Model
 	err       error
+}
+
+type task struct {
+	taskText   string
+	isSelected bool
 }
 
 type (
@@ -52,50 +55,61 @@ func (m model) Init() tea.Cmd {
 }
 
 func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
-	isEmpty := false
 	var cmd tea.Cmd
+
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
 		switch msg.String() {
 		case "esc":
 			Save(m)
 			return m, tea.Quit
-		case "up":
-			if m.cursor > 0 {
-				m.cursor--
-			}
-		case "down":
-			if m.cursor < len(m.choices)-1 {
-				m.cursor++
-			}
 		case "enter":
 			if m.isTyping {
 				if m.textInput.Value() > "" {
-					m.choices = append(m.choices, m.textInput.Value())
+					m.taskList = append(m.taskList, task{m.textInput.Value(), false})
 					m.isTyping = false
-					isEmpty = true
+					m.textInput.Reset()
 				}
 			} else {
 				m.isTyping = true
-			}
-		case " ":
-			_, ok := m.selected[m.cursor]
-			if ok {
-				delete(m.selected, m.cursor)
-			} else {
-				m.selected[m.cursor] = struct{}{}
 			}
 		}
 	case errMsg:
 		m.err = msg
 		return m, nil
 	}
+
 	if m.isTyping {
 		m.textInput, cmd = m.textInput.Update(msg)
+		return m, cmd
 	}
-	if isEmpty {
-		m.textInput.Reset()
+
+	switch msg := msg.(type) {
+	case tea.KeyMsg:
+		switch msg.String() {
+		case "up":
+			if m.cursor > 0 {
+				m.cursor--
+			}
+		case "down":
+			if m.cursor < len(m.taskList)-1 {
+				m.cursor++
+			}
+		case "d":
+			if len(m.taskList) > 0 {
+				m.taskList = append(m.taskList[:m.cursor], m.taskList[m.cursor+1:]...)
+				if m.cursor > len(m.taskList)-1 {
+					m.cursor = len(m.taskList) - 1
+				}
+			}
+		case " ":
+			m.taskList[m.cursor].isSelected = !m.taskList[m.cursor].isSelected
+		}
+	case errMsg:
+		m.err = msg
+		return m, nil
 	}
+
 	return m, cmd
 }
 
@@ -109,7 +123,7 @@ func (m model) View() string {
 
 	s := "Task list:\n\n"
 
-	for i, choice := range m.choices {
+	for i, choice := range m.taskList {
 
 		cursor := "▍"
 		if m.cursor == i {
@@ -117,11 +131,11 @@ func (m model) View() string {
 		}
 
 		checked := " "
-		if _, ok := m.selected[i]; ok {
+		if m.taskList[i].isSelected {
 			checked = "✓"
 		}
 
-		s += fmt.Sprintf("%s [%s] %s\n", cursor, checked, choice)
+		s += fmt.Sprintf("%s [%s] %s\n", cursor, checked, choice.taskText)
 	}
 
 	s += "\nPress KeyEsc to quit and d to delete.\n"
@@ -134,8 +148,7 @@ func Save(m model) {
 		fmt.Println("Error:", err)
 		return
 	}
-
-  dirPath := filepath.Dir(filename)
+	dirPath := filepath.Dir(filename)
 	err = os.MkdirAll(dirPath, os.ModePerm)
 	if err != nil {
 		fmt.Println("Error creating directory:", err)
@@ -159,8 +172,11 @@ func Load() model {
 
 	if _, err := os.Stat(filename); os.IsNotExist(err) {
 		return model{
-			choices:   []string{"Do this", "Do that", "this is a never ending cycle"},
-			selected:  make(map[int]struct{}),
+			taskList: []task{
+				{"Do this", true},
+				{"Do that", false},
+				{"this is a never ending cycle", false},
+			},
 			textInput: ti,
 			err:       nil,
 		}
@@ -191,36 +207,56 @@ func Load() model {
 //  ╚█████╔╝ ███████║ ╚██████╔╝ ██║ ╚████║        ██████╔╝ ███████║
 //   ╚════╝  ╚══════╝  ╚═════╝  ╚═╝  ╚═══╝        ╚═════╝  ╚══════╝
 
-func (m model) MarshalJSON() ([]byte, error) {
-	type ExportedModel struct {
-		Choices  []string
-		Cursor   int
-		Selected map[int]struct{}
-	}
+type ExportedModel struct {
+	TaskList []task
+	Cursor   int
+}
 
+func (m model) MarshalJSON() ([]byte, error) {
 	exportedModel := ExportedModel{
-		Choices:  m.choices,
+		TaskList: m.taskList,
 		Cursor:   m.cursor,
-		Selected: m.selected,
 	}
 
 	return json.Marshal(exportedModel)
 }
 
 func (m *model) UnmarshalJSON(data []byte) error {
-	var exportedModel struct {
-		Choices  []string
-		Cursor   int
-		Selected map[int]struct{}
-	}
+	var exportedModel ExportedModel
 
 	if err := json.Unmarshal(data, &exportedModel); err != nil {
 		return err
 	}
 
-	m.choices = exportedModel.Choices
+	m.taskList = exportedModel.TaskList
 	m.cursor = exportedModel.Cursor
-	m.selected = exportedModel.Selected
+
+	return nil
+}
+
+type ExportedTask struct {
+	TaskText   string
+	IsSelected bool
+}
+
+func (t task) MarshalJSON() ([]byte, error) {
+	exportedTask := ExportedTask{
+		TaskText:   t.taskText,
+		IsSelected: t.isSelected,
+	}
+
+	return json.Marshal(exportedTask)
+}
+
+func (t *task) UnmarshalJSON(data []byte) error {
+	var exportedTask ExportedTask
+
+	if err := json.Unmarshal(data, &exportedTask); err != nil {
+		return err
+	}
+
+	t.taskText = exportedTask.TaskText
+	t.isSelected = exportedTask.IsSelected
 
 	return nil
 }

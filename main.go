@@ -8,11 +8,16 @@ import (
 
 	"github.com/charmbracelet/bubbles/textinput"
 	tea "github.com/charmbracelet/bubbletea"
+	termenv "github.com/muesli/termenv"
 )
 
-var filename string = "/.local/share/tuiapptest/data.json"
+var (
+	filename string = "/.local/share/tuiapptest/data.json"
+	output   *termenv.Output
+)
 
 func main() {
+	output = termenv.NewOutput(os.Stdout)
 	homeDir, err := os.UserHomeDir()
 	if err != nil {
 		fmt.Println("Error getting user home directory:", err)
@@ -67,6 +72,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			if m.state == 2 {
 				if m.textInput.Value() > "" {
 					m.taskList = append(m.taskList, task{m.textInput.Value(), false})
+					m.cursor = 0
 					m.state = 1
 					m.textInput.Reset()
 				}
@@ -127,12 +133,15 @@ func (m model) View() string {
 				cursor = "▉"
 			}
 
-			checked := " "
+			taskLine := fmt.Sprintf("%s", choice.taskText)
 			if m.taskList[i].isSelected {
-				checked = "✓"
+				taskLine = output.String(fmt.Sprintf("%s", choice.taskText)).
+					CrossOut().
+					Faint().
+					String()
 			}
 
-			s += fmt.Sprintf("%s [%s] %s\n", cursor, checked, choice.taskText)
+			s += fmt.Sprintf("%s %s\n", cursor, taskLine)
 		}
 
 		s += "\nPress KeyEsc to quit and d to delete.\n"
@@ -146,6 +155,13 @@ func (m model) View() string {
 
 	return s
 }
+
+// ███████╗  █████╗  ██╗   ██╗ ███████╗     ██╗ ██╗       ██████╗   █████╗  ██████╗
+// ██╔════╝ ██╔══██╗ ██║   ██║ ██╔════╝    ██╔╝ ██║      ██╔═══██╗ ██╔══██╗ ██╔══██╗
+// ███████╗ ███████║ ██║   ██║ █████╗     ██╔╝  ██║      ██║   ██║ ███████║ ██║  ██║
+// ╚════██║ ██╔══██║ ╚██╗ ██╔╝ ██╔══╝    ██╔╝   ██║      ██║   ██║ ██╔══██║ ██║  ██║
+// ███████║ ██║  ██║  ╚████╔╝  ███████╗ ██╔╝    ███████╗ ╚██████╔╝ ██║  ██║ ██████╔╝
+// ╚══════╝ ╚═╝  ╚═╝   ╚═══╝   ╚══════╝ ╚═╝     ╚══════╝  ╚═════╝  ╚═╝  ╚═╝ ╚═════╝
 
 func Save(m model) {
 	jsonData, err := json.Marshal(m)

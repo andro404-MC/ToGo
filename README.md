@@ -1,6 +1,7 @@
 # ToGo
 Simple terminal based application written in Go.
 
+![preview](assets/preview.gif)
 ## Features
 well, for now, the basics of the basics :
 - add/delete a task

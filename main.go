@@ -199,6 +199,7 @@ func Load() model {
 				{"this is a never ending cycle", false},
 			},
 			textInput: ti,
+			state:     1,
 			err:       nil,
 		}
 	}
@@ -214,7 +215,6 @@ func Load() model {
 	err = json.Unmarshal(loadedData, &loadedModel)
 	if err != nil {
 		fmt.Println("Error:", err)
-		return model{}
 	}
 
 	loadedModel.textInput = ti

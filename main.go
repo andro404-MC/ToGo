@@ -65,9 +65,6 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
 		switch msg.String() {
-		case "esc":
-			Save(m)
-			return m, tea.Quit
 		case "enter":
 			if m.state == 2 {
 				if m.textInput.Value() > "" {
@@ -87,6 +84,17 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 	if m.state == 2 {
 		m.textInput, cmd = m.textInput.Update(msg)
+		switch msg := msg.(type) {
+		case tea.KeyMsg:
+			switch msg.String() {
+			case "esc":
+				m.state = 1
+				m.textInput.Reset()
+			}
+		case errMsg:
+			m.err = msg
+			return m, nil
+		}
 		return m, cmd
 	}
 
@@ -110,6 +118,9 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			}
 		case " ":
 			m.taskList[m.cursor].isSelected = !m.taskList[m.cursor].isSelected
+		case "esc":
+			Save(m)
+			return m, tea.Quit
 		}
 	case errMsg:
 		m.err = msg
@@ -120,11 +131,11 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 }
 
 func (m model) View() string {
-	var s string
+	s := "\n"
 
 	switch m.state {
 	case 1:
-		s = "Task list:\n\n"
+		s += "Task list:\n\n"
 
 		for i, choice := range m.taskList {
 
@@ -144,13 +155,13 @@ func (m model) View() string {
 			s += fmt.Sprintf("%s %s\n", cursor, taskLine)
 		}
 
-		s += "\nPress KeyEsc to quit and d to delete.\n"
+		s += "\n(Esc) quit - (d) delete - (enter) add\n"
 
 	case 2:
-		s = fmt.Sprintf("Add a new task\n\n%s\n\n%s",
+		s += fmt.Sprintf("Add a new task\n\n%s\n\n%s",
 			m.textInput.View(),
-			"(esc to quit)",
-		) + "\n"
+			"(esc) return - (enter) confirm\n",
+		)
 	}
 
 	return s

@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"flag"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -24,13 +25,60 @@ func main() {
 		os.Exit(3)
 	}
 	filename = homeDir + filename
+	flagStuff()
 
 	p := tea.NewProgram(initialModel())
 	if _, err := p.Run(); err != nil {
 		msg := "Buddy what have you done ?? i mean this is literaly just a task app how "
-		msg += "the fuck did you brock items Error.\nError: %v"
+		msg += "the fuck did you brok it.\nWell you dont have to gess here is the error :\n%v"
 		fmt.Printf(msg, err)
 		os.Exit(1)
+	}
+}
+
+func flagStuff() {
+	m := Load()
+	taskFlag := ""
+	didLs := false
+	willQuit := false
+	printHelp := false
+
+	flag.StringVar(&taskFlag, "add", "", "Task")
+	flag.BoolVar(&didLs, "ls", false, "List")
+	flag.BoolVar(&printHelp, "h", false, "Help")
+	flag.Parse()
+
+	if taskFlag != "" {
+		addNew(&m, task{taskFlag, false})
+		fmt.Println("New task has been added : \n", taskFlag)
+		willQuit = true
+		Save(&m)
+	}
+
+	if didLs {
+		s := "\n"
+		for i, choice := range m.taskList {
+			taskLine := fmt.Sprintf("%s", choice.taskText)
+			if m.taskList[i].isSelected {
+				taskLine = output.String(fmt.Sprintf("%s", choice.taskText)).
+					CrossOut().
+					Faint().
+					String()
+			}
+
+			s += fmt.Sprintf(" • %s\n", taskLine)
+		}
+		fmt.Println(s)
+		willQuit = true
+	}
+
+	if printHelp {
+		flag.PrintDefaults()
+		willQuit = true
+	}
+
+	if willQuit {
+		os.Exit(0)
 	}
 }
 
@@ -59,6 +107,13 @@ func (m model) Init() tea.Cmd {
 	return textinput.Blink
 }
 
+func addNew(m *model, newTask task) {
+	m.taskList = append(m.taskList, newTask)
+	m.cursor = 0
+	m.state = 1
+	m.textInput.Reset()
+}
+
 func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	var cmd tea.Cmd
 
@@ -68,10 +123,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case "enter":
 			if m.state == 2 {
 				if m.textInput.Value() > "" {
-					m.taskList = append(m.taskList, task{m.textInput.Value(), false})
-					m.cursor = 0
-					m.state = 1
-					m.textInput.Reset()
+					addNew(&m, task{m.textInput.Value(), false})
 				}
 			} else {
 				m.state = 2
@@ -119,7 +171,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case " ":
 			m.taskList[m.cursor].isSelected = !m.taskList[m.cursor].isSelected
 		case "esc":
-			Save(m)
+			Save(&m)
 			return m, tea.Quit
 		}
 	case errMsg:
@@ -174,7 +226,7 @@ func (m model) View() string {
 // ███████║ ██║  ██║  ╚████╔╝  ███████╗ ██╔╝    ███████╗ ╚██████╔╝ ██║  ██║ ██████╔╝
 // ╚══════╝ ╚═╝  ╚═╝   ╚═══╝   ╚══════╝ ╚═╝     ╚══════╝  ╚═════╝  ╚═╝  ╚═╝ ╚═════╝
 
-func Save(m model) {
+func Save(m *model) {
 	jsonData, err := json.Marshal(m)
 	if err != nil {
 		fmt.Println("Error:", err)

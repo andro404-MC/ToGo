@@ -112,6 +112,7 @@ func addNew(m *model, newTask task) {
 	m.textInput.Reset()
 }
 
+// update
 func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	var cmd tea.Cmd
 
@@ -187,29 +188,32 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	return m, cmd
 }
 
+// view
 func (m model) View() string {
 	s := "\n"
 
 	switch m.state {
 	case 1:
 		s += "Task list:\n\n"
+		if len(m.taskList) == 0 {
+			s += " • empty\n"
+		} else {
+			for i, choice := range m.taskList {
+				cursor := "▍"
+				if m.cursor == i {
+					cursor = "▉"
+				}
 
-		for i, choice := range m.taskList {
+				taskLine := fmt.Sprintf("%s", choice.taskText)
+				if m.taskList[i].isSelected {
+					taskLine = output.String(fmt.Sprintf("%s", choice.taskText)).
+						CrossOut().
+						Faint().
+						String()
+				}
 
-			cursor := "▍"
-			if m.cursor == i {
-				cursor = "▉"
+				s += fmt.Sprintf("%s %s\n", cursor, taskLine)
 			}
-
-			taskLine := fmt.Sprintf("%s", choice.taskText)
-			if m.taskList[i].isSelected {
-				taskLine = output.String(fmt.Sprintf("%s", choice.taskText)).
-					CrossOut().
-					Faint().
-					String()
-			}
-
-			s += fmt.Sprintf("%s %s\n", cursor, taskLine)
 		}
 
 		s += "\n(Esc) quit - (d) delete - (enter) add\n"

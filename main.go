@@ -30,7 +30,7 @@ func main() {
 	p := tea.NewProgram(initialModel())
 	if _, err := p.Run(); err != nil {
 		msg := "Buddy what have you done ?? i mean this is literaly just a task app how "
-		msg += "the fuck did you brok it.\nWell you dont have to gess here is the error :\n%v"
+		msg += "the fuck did you broke it.\nWell you dont have to gess here is the error :\n%v"
 		fmt.Printf(msg, err)
 		os.Exit(1)
 	}
@@ -39,9 +39,7 @@ func main() {
 func flagStuff() {
 	m := Load()
 	taskFlag := ""
-	didLs := false
-	willQuit := false
-	printHelp := false
+	var didLs, willQuit, printHelp bool
 
 	flag.StringVar(&taskFlag, "add", "", "Task")
 	flag.BoolVar(&didLs, "ls", false, "List")
@@ -128,6 +126,9 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			} else {
 				m.state = 2
 			}
+		case "ctrl+c":
+			Save(&m)
+			return m, tea.Quit
 		}
 	case errMsg:
 		m.err = msg
@@ -156,10 +157,14 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case "up":
 			if m.cursor > 0 {
 				m.cursor--
+			} else if m.cursor == 0 {
+				m.cursor = len(m.taskList) - 1
 			}
 		case "down":
 			if m.cursor < len(m.taskList)-1 {
 				m.cursor++
+			} else if m.cursor == len(m.taskList)-1 {
+				m.cursor = 0
 			}
 		case "d":
 			if len(m.taskList) > 0 {

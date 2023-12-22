@@ -34,8 +34,8 @@ func Load() model {
 	ti := textinput.New()
 	ti.Placeholder = "To Do"
 	ti.Focus()
-	ti.CharLimit = 156
-	ti.Width = 20
+	ti.CharLimit = 200
+	ti.Width = 35
 
 	if _, err := os.Stat(filename); os.IsNotExist(err) {
 		return model{

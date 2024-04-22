@@ -7,14 +7,29 @@ import (
 )
 
 func flagStuff() {
-	m := Load()
-	taskFlag := ""
+	var taskFlag, altFlag string
 	var didLs, willQuit, printHelp bool
 
-	flag.StringVar(&taskFlag, "add", "", "Task")
-	flag.BoolVar(&didLs, "ls", false, "List")
+	flag.StringVar(&altFlag, "t", "", "Custom list")
+	flag.StringVar(&taskFlag, "a", "", "Add yask")
+	flag.BoolVar(&didLs, "l", false, "List tasks")
 	flag.BoolVar(&printHelp, "h", false, "Help")
 	flag.Parse()
+
+	if altFlag != "" {
+		filename += altFlag + ".json"
+	} else {
+		filename += "data.json"
+	}
+
+	homeDir, err := os.UserHomeDir()
+	if err != nil {
+		fmt.Println("Error getting user home directory:", err)
+		os.Exit(3)
+	}
+	filename = homeDir + filename
+
+	m := Load()
 
 	if taskFlag != "" {
 		addNew(&m, task{taskFlag, false, 0})

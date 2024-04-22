@@ -10,7 +10,7 @@ import (
 )
 
 var (
-	filename string = "/.local/share/togo/data.json"
+	filename string = "/.local/share/togo/"
 	output   *termenv.Output
 )
 
@@ -24,12 +24,6 @@ func (m model) Init() tea.Cmd {
 
 func main() {
 	output = termenv.NewOutput(os.Stdout)
-	homeDir, err := os.UserHomeDir()
-	if err != nil {
-		fmt.Println("Error getting user home directory:", err)
-		os.Exit(3)
-	}
-	filename = homeDir + filename
 	flagStuff()
 
 	p := tea.NewProgram(initialModel())

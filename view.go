@@ -1,6 +1,8 @@
 package main
 
-import "fmt"
+import (
+	"fmt"
+)
 
 func (m model) View() string {
 	s := "\n"
@@ -17,12 +19,19 @@ func (m model) View() string {
 					cursor = "▉"
 				}
 
-				taskLine := fmt.Sprintf("%s", choice.taskText)
+				taskLine := choice.taskText
 				if m.taskList[i].isSelected {
-					taskLine = output.String(fmt.Sprintf("%s", choice.taskText)).
+					taskLine = output.String(choice.taskText).
 						CrossOut().
 						Faint().
 						String()
+				}
+
+				switch m.taskList[i].rating {
+				case 1:
+					taskLine = output.String(taskLine).Foreground(output.Color("#f3bb1b")).String()
+				case 2:
+					taskLine = output.String(taskLine).Foreground(output.Color("#f13637")).String()
 				}
 
 				s += fmt.Sprintf("%s %s\n", cursor, taskLine)

@@ -40,9 +40,9 @@ func Load() model {
 	if _, err := os.Stat(filename); os.IsNotExist(err) {
 		return model{
 			taskList: []task{
-				{"Do this", true},
-				{"Do that", false},
-				{"this is a never ending cycle", false},
+				{"Do this", true, 0},
+				{"Do that", false, 1},
+				{"this is a never ending cycle", false, 2},
 			},
 			textInput: ti,
 			state:     1,
@@ -98,12 +98,14 @@ func (m *model) UnmarshalJSON(data []byte) error {
 type ExportedTask struct {
 	TaskText   string
 	IsSelected bool
+	Rating     int8
 }
 
 func (t task) MarshalJSON() ([]byte, error) {
 	exportedTask := ExportedTask{
 		TaskText:   t.taskText,
 		IsSelected: t.isSelected,
+		Rating:     t.rating,
 	}
 
 	return json.Marshal(exportedTask)
@@ -118,6 +120,7 @@ func (t *task) UnmarshalJSON(data []byte) error {
 
 	t.taskText = exportedTask.TaskText
 	t.isSelected = exportedTask.IsSelected
+	t.rating = exportedTask.Rating
 
 	return nil
 }

@@ -11,7 +11,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case "enter":
 			if m.state == 2 {
 				if m.textInput.Value() > "" {
-					addNew(&m, task{m.textInput.Value(), false})
+					addNew(&m, task{m.textInput.Value(), false, 0})
 				}
 			} else {
 				m.state = 2

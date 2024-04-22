@@ -13,7 +13,13 @@ type model struct {
 type task struct {
 	taskText   string
 	isSelected bool
+	rating     int8
 }
+
+// rating
+// 0 normal
+// 1 important
+// 2 critical
 
 type (
 	errMsg error

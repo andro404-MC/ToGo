@@ -17,7 +17,7 @@ func flagStuff() {
 	flag.Parse()
 
 	if taskFlag != "" {
-		addNew(&m, task{taskFlag, false})
+		addNew(&m, task{taskFlag, false, 0})
 		fmt.Println("New task has been added : \n", taskFlag)
 		willQuit = true
 		Save(&m)

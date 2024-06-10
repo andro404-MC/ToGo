@@ -19,10 +19,11 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				if m.cursor > 0 {
 					m.cursor--
 				}
-			case "G":
+			case "G", "pgdown":
 				m.cursor = len(m.taskList) - 1
-			case "g":
+			case "g", "pgup":
 				m.cursor = 0
+
 			case " ":
 				m.taskList[m.cursor].isSelected = !m.taskList[m.cursor].isSelected
 			case "q":

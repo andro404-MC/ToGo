@@ -9,7 +9,6 @@ func (m model) View() string {
 
 	switch m.state {
 	case 1:
-		s += "Task list:\n\n"
 		if len(m.taskList) == 0 {
 			s += " • empty\n"
 		} else {
@@ -38,12 +37,9 @@ func (m model) View() string {
 			}
 		}
 
-		s += "\n(Esc) quit - (d) delete - (enter) add\n"
-
 	case 2:
-		s += fmt.Sprintf("Add a new task\n\n%s\n\n%s",
+		s += fmt.Sprintf("\n%s\n\n",
 			m.textInput.View(),
-			"(esc) return - (enter) confirm\n",
 		)
 	}
 

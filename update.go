@@ -38,6 +38,20 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 						m.cursor = len(m.taskList) - 1
 					}
 				}
+			case "0":
+				m.taskList[m.cursor].rating = 0
+			case "1":
+				if m.taskList[m.cursor].rating == 1 {
+					m.taskList[m.cursor].rating = 0
+				} else {
+					m.taskList[m.cursor].rating = 1
+				}
+			case "2":
+				if m.taskList[m.cursor].rating == 2 {
+					m.taskList[m.cursor].rating = 0
+				} else {
+					m.taskList[m.cursor].rating = 2
+				}
 			}
 		case errMsg:
 			m.err = msg

@@ -48,6 +48,12 @@ func flagStuff() {
 					Faint().
 					String()
 			}
+			switch m.taskList[i].rating {
+			case 1:
+				taskLine = output.String(taskLine).Foreground(output.Color("#f3bb1b")).String()
+			case 2:
+				taskLine = output.String(taskLine).Foreground(output.Color("#f13637")).String()
+			}
 
 			s += fmt.Sprintf(" • %s\n", taskLine)
 		}

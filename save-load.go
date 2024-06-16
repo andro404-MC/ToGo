@@ -76,7 +76,6 @@ type ExportedModel struct {
 func (m model) MarshalJSON() ([]byte, error) {
 	exportedModel := ExportedModel{
 		TaskList: m.taskList,
-		Cursor:   m.cursor,
 	}
 
 	return json.Marshal(exportedModel)
@@ -90,7 +89,6 @@ func (m *model) UnmarshalJSON(data []byte) error {
 	}
 
 	m.taskList = exportedModel.TaskList
-	m.cursor = exportedModel.Cursor
 
 	return nil
 }

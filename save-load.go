@@ -1,20 +1,22 @@
 package main
 
 import (
-	"encoding/json"
 	"fmt"
 	"os"
 	"path/filepath"
+	"strings"
 
 	"github.com/charmbracelet/bubbles/textinput"
+	"gopkg.in/yaml.v3"
 )
 
 func Save(m *model) {
-	jsonData, err := json.Marshal(m)
+	yamlData, err := yaml.Marshal(&m)
 	if err != nil {
 		fmt.Println("Error:", err)
 		return
 	}
+
 	dirPath := filepath.Dir(filename)
 	err = os.MkdirAll(dirPath, os.ModePerm)
 	if err != nil {
@@ -22,8 +24,8 @@ func Save(m *model) {
 		return
 	}
 
-	// Write JSON data to a file
-	err = os.WriteFile(filename, jsonData, 0o644)
+	writenData := strings.ReplaceAll(string(yamlData), "\n    -", "\n\n    -")
+	err = os.WriteFile(filename, []byte(writenData), 0o644)
 	if err != nil {
 		fmt.Println("Error:", err)
 		return
@@ -39,7 +41,7 @@ func Load() model {
 
 	if _, err := os.Stat(filename); os.IsNotExist(err) {
 		return model{
-			taskList: []task{
+			TaskList: []task{
 				{"Do this", true, 0},
 				{"Do that", false, 1},
 				{"this is a never ending cycle", false, 2},
@@ -58,7 +60,7 @@ func Load() model {
 
 	var loadedModel model
 
-	err = json.Unmarshal(loadedData, &loadedModel)
+	err = yaml.Unmarshal(loadedData, &loadedModel)
 	if err != nil {
 		fmt.Println("Error:", err)
 	}
@@ -66,59 +68,4 @@ func Load() model {
 	loadedModel.textInput = ti
 	loadedModel.state = 1
 	return loadedModel
-}
-
-type ExportedModel struct {
-	TaskList []task
-	Cursor   int
-}
-
-func (m model) MarshalJSON() ([]byte, error) {
-	exportedModel := ExportedModel{
-		TaskList: m.taskList,
-	}
-
-	return json.Marshal(exportedModel)
-}
-
-func (m *model) UnmarshalJSON(data []byte) error {
-	var exportedModel ExportedModel
-
-	if err := json.Unmarshal(data, &exportedModel); err != nil {
-		return err
-	}
-
-	m.taskList = exportedModel.TaskList
-
-	return nil
-}
-
-type ExportedTask struct {
-	TaskText   string
-	IsSelected bool
-	Rating     int8
-}
-
-func (t task) MarshalJSON() ([]byte, error) {
-	exportedTask := ExportedTask{
-		TaskText:   t.taskText,
-		IsSelected: t.isSelected,
-		Rating:     t.rating,
-	}
-
-	return json.Marshal(exportedTask)
-}
-
-func (t *task) UnmarshalJSON(data []byte) error {
-	var exportedTask ExportedTask
-
-	if err := json.Unmarshal(data, &exportedTask); err != nil {
-		return err
-	}
-
-	t.taskText = exportedTask.TaskText
-	t.isSelected = exportedTask.IsSelected
-	t.rating = exportedTask.Rating
-
-	return nil
 }

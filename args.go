@@ -17,9 +17,9 @@ func flagStuff() {
 	flag.Parse()
 
 	if altFlag != "" {
-		filename += altFlag + ".json"
+		filename += altFlag + ".yaml"
 	} else {
-		filename += "data.json"
+		filename += "data.yaml"
 	}
 
 	homeDir, err := os.UserHomeDir()
@@ -40,15 +40,15 @@ func flagStuff() {
 
 	if didLs {
 		s := "\n"
-		for i, choice := range m.taskList {
-			taskLine := fmt.Sprintf("%s", choice.taskText)
-			if m.taskList[i].isSelected {
-				taskLine = output.String(fmt.Sprintf("%s", choice.taskText)).
+		for i, choice := range m.TaskList {
+			taskLine := fmt.Sprintf("%s", choice.TaskText)
+			if m.TaskList[i].IsSelected {
+				taskLine = output.String(fmt.Sprintf("%s", choice.TaskText)).
 					CrossOut().
 					Faint().
 					String()
 			}
-			switch m.taskList[i].rating {
+			switch m.TaskList[i].Rating {
 			case 1:
 				taskLine = output.String(taskLine).Foreground(output.Color("#f3bb1b")).String()
 			case 2:

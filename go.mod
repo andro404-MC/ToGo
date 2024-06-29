@@ -6,6 +6,7 @@ require (
 	github.com/charmbracelet/bubbles v0.16.1
 	github.com/charmbracelet/bubbletea v0.24.2
 	github.com/muesli/termenv v0.15.2
+	gopkg.in/yaml.v3 v3.0.1
 )
 
 require (

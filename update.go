@@ -12,7 +12,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case tea.KeyMsg:
 			switch msg.String() {
 			case "j", "down":
-				if m.cursor < len(m.taskList)-1 {
+				if m.cursor < len(m.TaskList)-1 {
 					m.cursor++
 				}
 			case "k", "up":
@@ -20,37 +20,37 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 					m.cursor--
 				}
 			case "G", "pgdown":
-				m.cursor = len(m.taskList) - 1
+				m.cursor = len(m.TaskList) - 1
 			case "g", "pgup":
 				m.cursor = 0
 
 			case " ":
-				m.taskList[m.cursor].isSelected = !m.taskList[m.cursor].isSelected
+				m.TaskList[m.cursor].IsSelected = !m.TaskList[m.cursor].IsSelected
 			case "q":
 				Save(&m)
 				return m, tea.Quit
 			case "a":
 				m.state = 2
 			case "d":
-				if len(m.taskList) > 0 {
-					m.taskList = append(m.taskList[:m.cursor], m.taskList[m.cursor+1:]...)
-					if m.cursor > len(m.taskList)-1 {
-						m.cursor = len(m.taskList) - 1
+				if len(m.TaskList) > 0 {
+					m.TaskList = append(m.TaskList[:m.cursor], m.TaskList[m.cursor+1:]...)
+					if m.cursor > len(m.TaskList)-1 {
+						m.cursor = len(m.TaskList) - 1
 					}
 				}
 			case "0":
-				m.taskList[m.cursor].rating = 0
+				m.TaskList[m.cursor].Rating = 0
 			case "1":
-				if m.taskList[m.cursor].rating == 1 {
-					m.taskList[m.cursor].rating = 0
+				if m.TaskList[m.cursor].Rating == 1 {
+					m.TaskList[m.cursor].Rating = 0
 				} else {
-					m.taskList[m.cursor].rating = 1
+					m.TaskList[m.cursor].Rating = 1
 				}
 			case "2":
-				if m.taskList[m.cursor].rating == 2 {
-					m.taskList[m.cursor].rating = 0
+				if m.TaskList[m.cursor].Rating == 2 {
+					m.TaskList[m.cursor].Rating = 0
 				} else {
-					m.taskList[m.cursor].rating = 2
+					m.TaskList[m.cursor].Rating = 2
 				}
 			}
 		case errMsg:
@@ -95,11 +95,12 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		return m, nil
 	}
 
+	m.termHeight = 88
 	return m, cmd
 }
 
 func addNew(m *model, newTask task) {
-	m.taskList = append(m.taskList, newTask)
+	m.TaskList = append(m.TaskList, newTask)
 	m.cursor = 0
 	m.state = 1
 }

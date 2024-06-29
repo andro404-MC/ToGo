@@ -3,17 +3,20 @@ package main
 import "github.com/charmbracelet/bubbles/textinput"
 
 type model struct {
-	taskList  []task
-	cursor    int
-	state     int
+	TaskList []task `yaml:"tasks"`
+
+	termHeight int
+	cursor     int
+	state      int
+
 	textInput textinput.Model
 	err       error
 }
 
 type task struct {
-	taskText   string
-	isSelected bool
-	rating     int8
+	TaskText   string `yaml:"name"`
+	IsSelected bool   `yaml:"done"`
+	Rating     int8   `yaml:"rating"`
 }
 
 // rating

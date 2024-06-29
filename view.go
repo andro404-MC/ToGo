@@ -9,24 +9,24 @@ func (m model) View() string {
 
 	switch m.state {
 	case 1:
-		if len(m.taskList) == 0 {
+		if len(m.TaskList) == 0 {
 			s += " • empty\n"
 		} else {
-			for i, choice := range m.taskList {
+			for i, choice := range m.TaskList {
 				cursor := "▍"
 				if m.cursor == i {
 					cursor = "▉"
 				}
 
-				taskLine := choice.taskText
-				if m.taskList[i].isSelected {
-					taskLine = output.String(choice.taskText).
+				taskLine := choice.TaskText
+				if m.TaskList[i].IsSelected {
+					taskLine = output.String(choice.TaskText).
 						CrossOut().
 						Faint().
 						String()
 				}
 
-				switch m.taskList[i].rating {
+				switch m.TaskList[i].Rating {
 				case 1:
 					taskLine = output.String(taskLine).Foreground(output.Color("#f3bb1b")).String()
 				case 2:

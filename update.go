@@ -11,6 +11,26 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		switch msg := msg.(type) {
 		case tea.KeyMsg:
 			switch msg.String() {
+			case "n":
+				if m.cursor < len(m.TaskList)-1 {
+					currentTask := m.TaskList[m.cursor]
+					replacedTask := m.TaskList[m.cursor+1]
+
+					m.TaskList[m.cursor] = replacedTask
+					m.TaskList[m.cursor+1] = currentTask
+
+					m.cursor++
+				}
+			case "m":
+				if m.cursor > 0 {
+					currentTask := m.TaskList[m.cursor]
+					replacedTask := m.TaskList[m.cursor-1]
+
+					m.TaskList[m.cursor] = replacedTask
+					m.TaskList[m.cursor-1] = currentTask
+
+					m.cursor--
+				}
 			case "j", "down":
 				if m.cursor < len(m.TaskList)-1 {
 					m.cursor++
@@ -23,7 +43,6 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				m.cursor = len(m.TaskList) - 1
 			case "g", "pgup":
 				m.cursor = 0
-
 			case " ":
 				m.TaskList[m.cursor].IsSelected = !m.TaskList[m.cursor].IsSelected
 			case "q":

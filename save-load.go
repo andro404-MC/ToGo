@@ -25,6 +25,7 @@ func Save(m *model) {
 	}
 
 	writenData := strings.ReplaceAll(string(yamlData), "\n    -", "\n\n    -")
+	writenData = strings.ReplaceAll(writenData, ":\n", ":")
 	err = os.WriteFile(filename, []byte(writenData), 0o644)
 	if err != nil {
 		fmt.Println("Error:", err)

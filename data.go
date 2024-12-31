@@ -24,6 +24,17 @@ type task struct {
 // 1 important
 // 2 critical
 
+const (
+	TASK_NORMAL = iota
+	TASK_IMPORTANT
+	TASK_CRITICAL
+)
+
+const (
+	APP_VIEW = iota
+	APP_ADD
+)
+
 type (
 	errMsg error
 )

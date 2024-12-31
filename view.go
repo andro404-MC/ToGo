@@ -8,7 +8,7 @@ func (m model) View() string {
 	s := "\n"
 
 	switch m.state {
-	case 1:
+	case APP_VIEW:
 		if len(m.TaskList) == 0 {
 			s += " • empty\n"
 		} else {
@@ -37,7 +37,7 @@ func (m model) View() string {
 			}
 		}
 
-	case 2:
+	case APP_ADD:
 		s += fmt.Sprintf("\n%s\n\n",
 			m.textInput.View(),
 		)

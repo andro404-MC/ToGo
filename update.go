@@ -6,8 +6,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	var cmd tea.Cmd
 
 	switch m.state {
-	case 1:
-		// List
+	case APP_VIEW:
 		switch msg := msg.(type) {
 		case tea.KeyMsg:
 			switch msg.String() {
@@ -49,7 +48,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				Save(&m)
 				return m, tea.Quit
 			case "a":
-				m.state = 2
+				m.state = APP_ADD
 			case "d":
 				if len(m.TaskList) > 0 {
 					m.TaskList = append(m.TaskList[:m.cursor], m.TaskList[m.cursor+1:]...)
@@ -76,8 +75,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			m.err = msg
 			return m, nil
 		}
-	case 2:
-		// add new element
+	case APP_ADD:
 		m.textInput, cmd = m.textInput.Update(msg)
 
 		switch msg := msg.(type) {
@@ -88,10 +86,10 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 					addNew(&m, task{m.textInput.Value(), false, 0})
 					m.textInput.Reset()
 					Save(&m)
-					m.state = 1
+					m.state = APP_VIEW
 				}
 			case "esc":
-				m.state = 1
+				m.state = APP_VIEW
 				m.textInput.Reset()
 			}
 		case errMsg:
@@ -121,5 +119,5 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 func addNew(m *model, newTask task) {
 	m.TaskList = append(m.TaskList, newTask)
 	m.cursor = 0
-	m.state = 1
+	m.state = APP_VIEW
 }
